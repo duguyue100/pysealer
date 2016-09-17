@@ -7,6 +7,7 @@ Email : duguyue100@gmail.com
 from __future__ import print_function
 import os
 from os.path import isdir, join
+import shutil
 
 from pysealer import utils
 
@@ -75,13 +76,17 @@ class Sealer():
 
         # install miniconda at the path
         self.build_conda = join(self.build_path, "miniconda")
-        sp.check_call(["chmod", "+x", self.host_conda])
-        sp.check_call([self.host_conda, "-b", "-p",
-                       self.build_conda])
+        if not isdir(self.build_conda):
+            sp.check_call(["chmod", "+x", self.host_conda])
+            sp.check_call([self.host_conda, "-b", "-p",
+                           self.build_conda])
         print ("[MESSAGE] The miniconda at %s is "
                "installed at %s" % (self.host_conda, self.build_conda))
 
         self.build_bin = join(self.build_conda, "bin")
+
+    def config_environment(self):
+        """Configure environment based on a .pysealer_config file."""
 
     def compile_app(self):
         """Build entire app and redirect it to build path."""
@@ -91,4 +96,24 @@ class Sealer():
         self.build_python = join(self.build_bin, "python")
         sp.check_call([self.build_python, "--version"])
 
-        # compile it!
+        folder_list = os.listdir(self.app_path)
+        folder_list.remove("pysealer_build")
+
+        for f_name in folder_list:
+            f_path = join(self.app_path, f_name)
+            if isdir(f_path):
+                # compile it!
+                sp.check_call([self.build_python, "-m", "compileall",
+                               f_path])
+                print ("[MESSAGE] %s is compiled!" % (f_path))
+
+    def prepare_app(self):
+        """Replicate the app structure and copy the file into builder path."""
+        folder_list = os.listdir(self.app_path)
+        folder_list.remove("pysealer_build")
+
+        for f_name in folder_list:
+            f_path = join(self.app_path, f_name)
+            if isdir(f_path):
+                shutil.copytree(f_path, join(self.build_src, f_name),
+                                ignore=shutil.ignore_patterns('*.py'))

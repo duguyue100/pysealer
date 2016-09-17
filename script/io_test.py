@@ -4,7 +4,15 @@ Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
 
+import os
 import pysealer as ps
-from pysealer import utils
+from pysealer import sealer
 
-utils.get_conda(platform="osx", pyver=2, arch=64)
+app_path = os.path.join(ps.HOME_PATH, "Documents", "workspace", "test_app")
+
+seal_app = sealer.Sealer(app_path, host_platform="osx",
+                         target_platform="osx", pyver=2, arch=64)
+
+seal_app.init_build()
+seal_app.compile_app()
+seal_app.prepare_app()
