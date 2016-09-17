@@ -5,10 +5,15 @@ Email : duguyue100@gmail.com
 """
 
 from __future__ import print_function
-from os.path import isdir
+import os
+from os.path import isdir, isfile, join
+import urllib
+
+import pysealer
 
 
-def get_conda(target_path, platform="osx", pyver=2, arch=64):
+def get_conda(target_path=pysealer.PYSEALER_RES_PATH,
+              platform="osx", pyver=2, arch=64):
     """Get lastest miniconda by given platform.
 
     Parameters
@@ -40,15 +45,33 @@ def get_conda(target_path, platform="osx", pyver=2, arch=64):
     # specify platform
     if platform == "osx":
         down_url += "MacOSX-"
+        target_path = join(target_path, "osx")
     elif platform == "linux":
         down_url += "Linux-"
+        target_path = join(target_path, "linux")
     elif platform == "windows":
         down_url += "Windows-"
+        target_path = join(target_path, "windows")
 
     # specify architecture
     if platform != "osx":
         down_url = down_url+"x86.sh" if arch == 32 else down_url+"x86_64.sh"
+        target_path = join(target_path, "32") \
+            if arch == 32 else join(target_path, "64")
     else:
         down_url += "x86_64.sh"
+        target_path = join(target_path, "64")
+
+    if not isdir(target_path):
+        os.makedirs(target_path)
 
     print ("[MESSAGE] Downloading Miniconda from %s..." % (down_url))
+
+    if not isfile(join(target_path, "miniconda.sh")):
+        urllib.urlretrieve(down_url,
+                           filename=join(target_path, "miniconda.sh"))
+
+    print ("[MESSAGE] The miniconda downloaded "
+           "and saved at %s." % (target_path))
+
+    return join(target_path, "miniconda.sh")

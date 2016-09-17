@@ -16,3 +16,6 @@ PYSEALER_RES_PATH = join(PYSEALER_PATH, "res")
 
 if not os.path.isdir(PYSEALER_PATH):
     os.makedirs(PYSEALER_PATH)
+
+if not os.path.isdir(PYSEALER_RES_PATH):
+    os.makedirs(PYSEALER_RES_PATH)

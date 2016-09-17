@@ -7,4 +7,4 @@ Email : duguyue100@gmail.com
 import pysealer as ps
 from pysealer import utils
 
-utils.get_conda(ps.HOME_PATH, platform="windows", pyver=2, arch=64)
+utils.get_conda(platform="osx", pyver=2, arch=64)
