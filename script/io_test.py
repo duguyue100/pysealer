@@ -14,5 +14,6 @@ seal_app = sealer.Sealer(app_path, host_platform="osx",
                          target_platform="osx", pyver=2, arch=64)
 
 seal_app.init_build()
+seal_app.config_environment()
 seal_app.compile_app()
 seal_app.prepare_app()

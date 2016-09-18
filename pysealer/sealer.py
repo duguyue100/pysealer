@@ -6,8 +6,9 @@ Email : duguyue100@gmail.com
 
 from __future__ import print_function
 import os
-from os.path import isdir, join
+from os.path import isdir, isfile, join
 import shutil
+import yaml
 
 from pysealer import utils
 
@@ -86,7 +87,46 @@ class Sealer():
         self.build_bin = join(self.build_conda, "bin")
 
     def config_environment(self):
-        """Configure environment based on a .pysealer_config file."""
+        """Configure environment based on a .pysealer_config.yml file.
+
+        Setup environment by specifying:
+        conda_install
+        pip_install
+        app_list
+
+        in YAML format.
+        """
+        self.config_path = join(self.app_path, ".pysealer_config.yml")
+        if not isfile(self.config_path):
+            print ("[MESSAGE] No valid .pysealer_config.yml is found "
+                   "for the project, skip environment configuration.")
+            return
+
+        with open(self.config_path, mode="r") as f:
+            config_dict = yaml.load(f)
+
+        print ("[MESSAGE] Configuring environment...")
+        # install conda item
+        self.build_conda = join(self.build_bin, "conda")
+        sp.check_call([self.build_conda, "info", "-a"])
+        sp.check_call([self.build_conda, "update", "--yes", "conda"])
+        sp.check_call([self.build_conda, "install", "--yes", "pip"])
+        for conda_item in config_dict["conda_install"]:
+            sp.check_call([self.build_conda, "install", "--yes", conda_item])
+        print ("[MESSAGE] Conda dependencies are installed.")
+
+        # install pip items
+        self.build_pip = join(self.build_bin, "pip")
+        sp.check_call([self.build_pip, "--version"])
+        for pip_item in config_dict["pip_install"]:
+            if pip_item == "requirements.txt":
+                if isfile(join(self.app_path, pip_item)):
+                    sp.check_call([self.build_pip, "install", "-r",
+                                   join(self.app_path, pip_item)])
+        print ("[MESSAGE] PIP dependencies are installed.")
+        sp.check_call([self.build_conda, "list"])
+        shutil.copy2(self.config_path, self.build_path)
+        print ("[MESSAGE] Building environment is configured.")
 
     def compile_app(self):
         """Build entire app and redirect it to build path."""
@@ -114,6 +154,8 @@ class Sealer():
 
         for f_name in folder_list:
             f_path = join(self.app_path, f_name)
-            if isdir(f_path):
+            if isdir(f_path) and not isdir(join(self.build_src, f_name)):
                 shutil.copytree(f_path, join(self.build_src, f_name),
                                 ignore=shutil.ignore_patterns('*.py'))
+
+        print ("[MESSAGE] The project is saved to %s" % (self.build_src))
