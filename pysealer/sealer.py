@@ -159,3 +159,13 @@ class Sealer():
                                 ignore=shutil.ignore_patterns('*.py'))
 
         print ("[MESSAGE] The project is saved to %s" % (self.build_src))
+
+    def seal_app(self):
+        """The final procedures for sealing the app.
+
+        1. bash file that set general parameters at client end.
+        2. bash file that setup environment at client end.
+        3. bash file that compile a list of running bash file for compiling as
+           app.
+        4. Wrap the entire app as an installer.
+        """

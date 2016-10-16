@@ -17,3 +17,4 @@ seal_app.init_build()
 seal_app.config_environment()
 seal_app.compile_app()
 seal_app.prepare_app()
+
