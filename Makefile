@@ -1,9 +1,23 @@
-# Makefile for PySealer
-# Author: Yuhuang Hu
-# Email : duguyue100@gmail.com
+# This is a Python template Makefile, do modification as you want
+#
+# Project: 
+# Author:
+# Email :
 
+HOST = 127.0.0.1
+PYTHONPATH="$(shell printenv PYTHONPATH):$(PWD)"
 
-export PYTHONPATH=./:$PYTHOPATH
+clean:
+	find . -name '*.pyc' -exec rm --force {} +
+	find . -name '*.pyo' -exec rm --force {} +
+	find . -name '*~' -exec rm --force  {} +
 
 run:
-	python script/io_test.py
+
+test:
+	PYTHONPATH=$(PYTHONPATH) python 
+
+io-test:
+	PYTHONPATH=$(PYTHONPATH) python ./pysealer/test_script/io_test.py 
+
+cleanall:
