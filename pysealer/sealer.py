@@ -297,9 +297,15 @@ class Sealer():
 
         self.build_script_file.write('\n')
         self.build_script_file.flush()
+
         # possible option
 
         # Install Miniconda
+        self.build_script_file.write(
+            '# Install miniconda in the current folder\n\n')
+
+        self.build_script_file.write('\n')
+        self.build_script_file.flush()
 
         # build conda installation
         self.build_script_file.write('# Install Conda Dependencies\n\n')
@@ -313,6 +319,7 @@ class Sealer():
 
         self.build_script_file.write('\n')
         self.build_script_file.flush()
+
         # build pip installation
         self.build_script_file.write('# Install pip Dependencies\n\n')
 
@@ -330,6 +337,9 @@ class Sealer():
                 #        to do this job.
                 self.build_script_file.write(
                         '$PIP install %s\n' % (pip_item))
+
+        self.build_script_file.write('\n')
+        self.build_script_file.flush()
 
         # set startup application
 
