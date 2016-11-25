@@ -16,6 +16,8 @@ def get_conda(target_path=pysealer.PYSEALER_RES_PATH,
               platform="osx", pyver=2, arch=64):
     """Get lastest miniconda by given platform.
 
+    WARNING: ONLY DEAL WITH LINUX PLATFORM RIGHT NOW!
+
     Parameters
     ----------
     target_path : string
