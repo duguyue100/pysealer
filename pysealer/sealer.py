@@ -228,7 +228,9 @@ class Sealer():
             self.app_author = "John Doe"
 
         # try to copy requirement file
-
+        if isfile(join(self.app_path, "requirements.txt")):
+            shutil.copy2(join(self.app_path, "requirements.txt"),
+                         self.seal_app)
 
         # copy compiled source
         self.seal_src_path = join(self.seal_path, "src")
@@ -308,6 +310,8 @@ class Sealer():
         for conda_item in config_dict["conda_install"]:
             self.build_script_file.write(
                 '$CONDA install --yes %s\n' % (conda_item))
+
+        self.build_script_file.write('\n')
         self.build_script_file.flush()
         # build pip installation
         self.build_script_file.write('# Install pip Dependencies\n\n')
@@ -315,16 +319,17 @@ class Sealer():
         self.build_script_file.write('$PIP --version\n')
         for pip_item in config_dict["pip_install"]:
             if pip_item == "requirements.txt":
-                if isfile(join(self.app_path, pip_item)):
+                if isfile(join(self.seal_path, pip_item)):
                     self.build_script_file.write(
-                        '$PIP install -r %s' % (self.seal_path, pip_item))
+                        '$PIP install -r %s\n'
+                        % (join(self.seal_path, pip_item)))
             else:
                 #  attempt to do the normal install
                 #  TODO: There may be duplicated install for certain
                 #        package. Right now, it's developer's responsibility
                 #        to do this job.
                 self.build_script_file.write(
-                        '$PIP install %s' % (pip_item))
+                        '$PIP install %s\n' % (pip_item))
 
         # set startup application
 
