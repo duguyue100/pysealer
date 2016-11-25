@@ -4,6 +4,7 @@ Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
 
+from __future__ import print_function
 import os
 from os.path import join
 
@@ -16,6 +17,10 @@ PYSEALER_RES_PATH = join(PYSEALER_PATH, "res")
 
 if not os.path.isdir(PYSEALER_PATH):
     os.makedirs(PYSEALER_PATH)
+    print ("[MESSAGE] PySealer package directory is created at %s"
+           % (PYSEALER_PATH))
 
 if not os.path.isdir(PYSEALER_RES_PATH):
     os.makedirs(PYSEALER_RES_PATH)
+    print ("[MESSAGE] PySealer resource directory is created at %s"
+           % (PYSEALER_RES_PATH))

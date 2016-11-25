@@ -132,7 +132,7 @@ class Sealer():
         """Build entire app and redirect it to build path."""
         # install all dependencies through conda
 
-        # indentify the right python
+        # identify the right python
         self.build_python = join(self.build_bin, "python")
         sp.check_call([self.build_python, "--version"])
 
