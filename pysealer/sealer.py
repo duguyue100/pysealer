@@ -364,12 +364,16 @@ class Sealer():
                 self.build_script_file.write(
                         '$PIP install %s\n' % (pip_item))
 
+        # clean conda
+        self.build_script_file.write(
+            '$CONDA clean --all --yes')
         self.build_script_file.write('\n')
         self.build_script_file.flush()
 
         self.build_script_file.write(
             '# [MESSAGE] The build script ends here.')
         self.build_script_file.close()
+        sp.check_call(["chmod", "+x", self.build_script_path])
         print ("[MESSAGE] The environment build script is prepared at %s"
                % (self.build_script_path))
 
@@ -421,4 +425,26 @@ class Sealer():
                 print ("[MESSAGE] The app running script is prepared at %s"
                        % (join(self.app_path, app_script+".sh")))
 
+        if not isdir(join(self.app_path, self.app_name)):
+            os.rename(join(self.app_path, "sealed_app"),
+                      join(self.app_path, self.app_name))
         print ("[MESSAGE] The pre-sealed package is prepared.")
+
+    def makeself(self, makeself=None):
+        """Use Makeself for building up installer."""
+        if makeself is None:
+            # Assume you have a environment value as makeself
+            makeself = os.environ["makeself"]
+
+        with open(self.config_path, mode="r") as f:
+            config_dict = yaml.load(f)
+
+        app_name = config_dict["app_name"][0]
+        app_version = config_dict["app_version"][0]
+        app_author = config_dict["app_author"][0]
+        sp.check_call([makeself, "--notemp",
+                       join(self.app_path, app_name),
+                       join(self.app_path, app_name+".run"),
+                       app_name+" "+app_version+" by "+app_author,
+                       "./build.sh"])
+        print ("[MESSAGE] The installer is built.")

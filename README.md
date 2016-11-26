@@ -14,6 +14,7 @@
 +   [x] Compile entire target application to byte code.
 +   [x] Automatically investigate the requirements of the target application
         requirements and then build an identical python environment.
++   [x] First simple working version.
 +   [ ] Apply custom filter for the files.
 +   [ ] Sample test application to test the full generated app.
 +   [ ] Take a big project online to convert it into source code free app.
