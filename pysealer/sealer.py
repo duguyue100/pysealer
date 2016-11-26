@@ -23,7 +23,8 @@ class Sealer():
     """The central class that wraps a target python application."""
 
     def __init__(self, app_path, host_platform="osx",
-                 target_platform="osx", pyver=2, arch=64):
+                 target_platform="osx", pyver=2,
+                 host_arch=64, target_arch=64):
         """Init a Sealer class."""
         # App's Core Path
         if isdir(app_path):
@@ -53,10 +54,17 @@ class Sealer():
                              "is not supported" % (pyver))
 
         # System architecture
-        if arch in [32, 64]:
-            self.arch = arch
+        if host_arch in [32, 64]:
+            self.host_arch = host_arch
         else:
-            raise ValueError("The architecture %d is not supported" % (arch))
+            raise ValueError("The architecture %d is not supported"
+                             % (host_arch))
+
+        if target_arch in [32, 64]:
+            self.target_arch = target_arch
+        else:
+            raise ValueError("The architecture %d is not supported"
+                             % (target_arch))
 
         # Package configuration path
         self.config_path = join(self.app_path, ".pysealer_config.yml")
@@ -68,14 +76,14 @@ class Sealer():
         self.build_bin = join(self.build_conda, "bin")
 
         # init the right miniconda for the host and target python
-        self.host_conda = utils.get_conda(platform=self.host_platform,
-                                          pyver=self.pyver,
-                                          arch=self.arch)
+        self.host_downurl, self.host_conda = utils.get_conda(
+            platform=self.host_platform, pyver=self.pyver,
+            arch=self.host_arch)
         print ("[MESSAGE] Host conda environment is downloaded.")
 
-        self.target_conda = utils.get_conda(platform=self.target_platform,
-                                            pyver=self.pyver,
-                                            arch=self.arch)
+        self.target_downurl, self.target_conda = utils.get_conda(
+            platform=self.target_platform, pyver=self.pyver,
+            arch=self.target_arch)
         print ("[MESSAGE] Target conda environment is downloaded.")
 
     def init_build(self):
@@ -304,6 +312,24 @@ class Sealer():
         self.build_script_file.write(
             '# Install miniconda in the current folder\n\n')
 
+        self.build_script_file.write(
+            '# The target platform is %s\n' % (self.target_platform))
+        if self.target_platform == "osx":
+            self.build_script_file.write(
+                'curl -o miniconda.sh %s\n\n' % (self.target_downurl))
+        elif self.target_platform == "linux":
+            self.build_script_file.write(
+                'wget -O miniconda.sh %s\n\n' % (self.target_downurl))
+
+        self.build_script_file.write(
+            'chmod +x ${APP_PATH}/miniconda.sh\n')
+        self.build_script_file.write(
+            '${APP_PATH}/miniconda.sh -b -p ${MINICONDA_PATH}\n')
+        self.build_script_file.write(
+            'echo "[MESSAGE] The target miniconda is built."\n')
+        self.build_script_file.write(
+            'rm ${APP_PATH}/miniconda.sh')
+
         self.build_script_file.write('\n')
         self.build_script_file.flush()
 
@@ -341,6 +367,58 @@ class Sealer():
         self.build_script_file.write('\n')
         self.build_script_file.flush()
 
-        # set startup application
-
+        self.build_script_file.write(
+            '# [MESSAGE] The build script ends here.')
         self.build_script_file.close()
+        print ("[MESSAGE] The environment build script is prepared at %s"
+               % (self.build_script_path))
+
+        # Build application list
+        for app_item in config_dict['app_list']:
+            app_folder_path = join("./src", app_item)
+            for app_script in config_dict['app_list'][app_item]:
+                if isfile(join(self.seal_path, app_script+".sh")):
+                    print ("[MESSAGE] The current app is existed!")
+                    continue
+                app_script_file = open(
+                    join(self.seal_path, app_script+".sh"), "w")
+
+                app_script_file.write("#!/bin/bash\n\n")
+                app_script_file.write(
+                    "# App script for %s by %s\n"
+                    % (app_script, self.app_author))
+                app_script_file.write(
+                    "# "+str(datetime.datetime.now())+"\n\n")
+                app_script_file.flush()
+
+                app_script_file.write(
+                    '# General Parameter Settings\n')
+                app_script_file.write('APP_PATH=${PWD}\n')
+                app_script_file.write('export APP_PATH\n')
+
+                app_script_file.write('SRC_PATH=${APP_PATH}/src\n')
+                app_script_file.write('export SRC_PATH\n')
+
+                app_script_file.write('MINICONDA_PATH=${APP_PATH}/miniconda\n')
+                app_script_file.write('export MINICONDA_PATH\n')
+
+                app_script_file.write('CONDA_BIN=${MINICONDA_PATH}/bin\n')
+                app_script_file.write('export CONDA_BIN\n')
+
+                app_script_file.write('PYTHON=${CONDA_BIN}/python\n')
+                app_script_file.write('export PYTHON\n\n')
+
+                app_script_file.write('# Running command\n')
+                app_script_file.write(
+                    'PYTHONPATH=${SRC_PATH}:$PYTHONPATH ${PYTHON} %s "$@"'
+                    % (join(app_folder_path, app_script+".pyc")))
+
+                app_script_file.close()
+
+                sp.check_call(["chmod", "+x",
+                               join(self.seal_path, app_script+".sh")])
+
+                print ("[MESSAGE] The app running script is prepared at %s"
+                       % (join(self.app_path, app_script+".sh")))
+
+        print ("[MESSAGE] The pre-sealed package is prepared.")

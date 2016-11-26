@@ -11,7 +11,7 @@ from pysealer import sealer
 app_path = os.path.join(ps.HOME_PATH, "Documents", "workspace", "test_app")
 
 seal_app = sealer.Sealer(app_path, host_platform="osx",
-                         target_platform="osx", pyver=2, arch=64)
+                         target_platform="osx", pyver=2)
 
 #  seal_app.init_build()
 #  seal_app.config_environment()

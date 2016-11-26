@@ -76,4 +76,4 @@ def get_conda(target_path=pysealer.PYSEALER_RES_PATH,
     print ("[MESSAGE] The miniconda downloaded "
            "and saved at %s." % (target_path))
 
-    return join(target_path, "miniconda.sh")
+    return down_url, join(target_path, "miniconda.sh")
