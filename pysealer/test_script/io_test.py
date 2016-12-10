@@ -8,7 +8,7 @@ import os
 import pysealer as ps
 from pysealer import sealer
 
-app_path = os.path.join(ps.HOME_PATH, "Documents", "workspace", "test_app")
+app_path = os.path.join(ps.HOME_PATH, "Downloads", "ss-model")
 
 seal_app = sealer.Sealer(app_path, host_platform="osx",
                          target_platform="osx", pyver=2)

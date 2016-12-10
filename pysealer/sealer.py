@@ -133,6 +133,7 @@ class Sealer():
         self.build_conda = join(self.build_bin, "conda")
         sp.check_call([self.build_conda, "info", "-a"])
         sp.check_call([self.build_conda, "update", "--yes", "conda"])
+        sp.check_call([self.build_conda, "install", "--yes", "conda-build"])
         sp.check_call([self.build_conda, "install", "--yes", "pip"])
         for conda_item in config_dict["conda_install"]:
             sp.check_call([self.build_conda, "install", "--yes", conda_item])
@@ -230,7 +231,6 @@ class Sealer():
         else:
             print ("[MESSAGE] No valid .pysealer_config.yml is found "
                    "for the project, skip environment configuration.")
-            # TODO: some default settings
             self.app_name = "app"
             self.app_version = "v0.1.0"
             self.app_author = "John Doe"
@@ -338,6 +338,7 @@ class Sealer():
 
         self.build_script_file.write('$CONDA info -a\n')
         self.build_script_file.write('$CONDA update --yes conda\n')
+        self.build_script_file.write('$CONDA install --yes conda-build\n')
         self.build_script_file.write('$CONDA install --yes pip\n')
         for conda_item in config_dict["conda_install"]:
             self.build_script_file.write(
@@ -377,6 +378,12 @@ class Sealer():
         print ("[MESSAGE] The environment build script is prepared at %s"
                % (self.build_script_path))
 
+        # construct optional environment arguments
+        opt_env_args = ""
+        if "opt_env_args" in config_dict:
+            for arg in config_dict["opt_env_args"]:
+                opt_env_args += arg+" "
+
         # Build application list
         for app_item in config_dict['app_list']:
             app_folder_path = join("./src", app_item)
@@ -414,8 +421,8 @@ class Sealer():
 
                 app_script_file.write('# Running command\n')
                 app_script_file.write(
-                    'PYTHONPATH=${SRC_PATH}:$PYTHONPATH ${PYTHON} %s "$@"'
-                    % (join(app_folder_path, app_script+".pyc")))
+                    'PYTHONPATH=${SRC_PATH}:$PYTHONPATH %s ${PYTHON} %s "$@"'
+                    % (opt_env_args, join(app_folder_path, app_script+".pyc")))
 
                 app_script_file.close()
 
